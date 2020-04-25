@@ -1,0 +1,44 @@
+version: "2"
+expansions: 5
+
+vars:
+  MODULE_NAME: "github.com/mbertschler/serverman"
+  BUILD_HASH:
+    sh: git log --pretty=format:%H -n 1
+  BUILD_DATE:
+    sh: date "+%s"
+  BUILD_GO_VERSION:
+    sh: go version | sed -e "s/^go version //"
+  BUILD_DIR: build
+  NAME: "serverman"
+  OUTPUT: "{{.BUILD_DIR}}/{{.NAME}}"
+
+tasks:
+  test:
+    silent: true
+    cmds:
+      - go test ./...
+
+  build:
+    silent: true
+    cmds:
+      - echo "building {{.OUTPUT}}"
+      - go build -trimpath -ldflags "-s -w -X '{{.MODULE_NAME}}/pkg/version.buildHash={{.BUILD_HASH}}' -X '{{.MODULE_NAME}}/pkg/version.buildDate={{.BUILD_DATE}}' -X '{{.MODULE_NAME}}/pkg/version.buildGoVersion={{.BUILD_GO_VERSION}}'" -o {{.OUTPUT}} '{{.MODULE_NAME}}/cmd/bootstrap'
+    sources:
+      - ./**/*.go
+      - Taskfile.yml
+    generates:
+      - "{{.OUTPUT}}"
+
+  run:
+    deps:
+      - task: build
+    cmds:
+      - "{{.OUTPUT}}"
+
+  clean:
+    silent: true
+    desc: remove build directory
+    cmds:
+      - cmd: rm -r {{.BUILD_DIR}} &> /dev/null
+      - ignore_error: true
