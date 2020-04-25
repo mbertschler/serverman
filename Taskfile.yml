@@ -19,6 +19,11 @@ tasks:
     cmds:
       - go test ./...
 
+  short-test:
+    silent: true
+    cmds:
+      - go test --short ./...
+
   build:
     silent: true
     cmds:
