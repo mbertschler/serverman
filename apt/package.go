@@ -37,3 +37,12 @@ func (p *Package) Apply(e *serverman.Env) (err error) {
 	}
 	return nil
 }
+
+// Remove purges the package with apt-get.
+func (p *Package) Remove(e *serverman.Env) (err error) {
+	out, err := e.RunString("apt-get", "purge", "-y", p.Name)
+	if err != nil {
+		return errors.Wrapf(err, "apt-get purge failed with: %q", out)
+	}
+	return nil
+}

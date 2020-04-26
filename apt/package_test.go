@@ -14,20 +14,35 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestAptInstall(t *testing.T) {
+func TestAptInstallRemove(t *testing.T) {
 	env, stop := test.StartDebian(t)
 	defer stop()
 
 	pkg := Package{Name: "nano"}
+
+	// not yet installed > check should be false
 	ok, err := pkg.Check(env)
 	require.NoError(t, err)
 	assert.False(t, ok)
 
 	err = pkg.Apply(env)
 	assert.NoError(t, err)
+
+	// installed > check should be true
+	ok, err = pkg.Check(env)
+	require.NoError(t, err)
+	assert.True(t, ok)
+
+	err = pkg.Remove(env)
+	assert.NoError(t, err)
+
+	// removed > check should be false again
+	ok, err = pkg.Check(env)
+	require.NoError(t, err)
+	assert.False(t, ok)
 }
 
-func TestAptInstallInvalid(t *testing.T) {
+func TestAptInvalidPackage(t *testing.T) {
 	env, stop := test.StartDebian(t)
 	defer stop()
 
