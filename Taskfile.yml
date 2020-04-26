@@ -1,4 +1,5 @@
 version: "2"
+silent: true
 expansions: 5
 
 vars:
@@ -7,28 +8,23 @@ vars:
     sh: git log --pretty=format:%H -n 1
   BUILD_DATE:
     sh: date "+%s"
-  BUILD_GO_VERSION:
-    sh: go version | sed -e "s/^go version //"
   BUILD_DIR: build
   NAME: "serverman"
   OUTPUT: "{{.BUILD_DIR}}/{{.NAME}}"
 
 tasks:
-  test:
-    silent: true
+  test-full:
     cmds:
       - go test ./...
 
-  short-test:
-    silent: true
+  test:
     cmds:
       - go test --short ./...
 
   build:
-    silent: true
     cmds:
       - echo "building {{.OUTPUT}}"
-      - go build -trimpath -ldflags "-s -w -X '{{.MODULE_NAME}}/pkg/version.buildHash={{.BUILD_HASH}}' -X '{{.MODULE_NAME}}/pkg/version.buildDate={{.BUILD_DATE}}' -X '{{.MODULE_NAME}}/pkg/version.buildGoVersion={{.BUILD_GO_VERSION}}'" -o {{.OUTPUT}} '{{.MODULE_NAME}}/cmd/bootstrap'
+      - go build -trimpath -ldflags "-s -w -X '{{.MODULE_NAME}}/pkg.buildHash={{.BUILD_HASH}}' -X '{{.MODULE_NAME}}/pkg.buildDate={{.BUILD_DATE}}'" -o {{.OUTPUT}} '{{.MODULE_NAME}}/cmd/bootstrap'
     sources:
       - ./**/*.go
       - Taskfile.yml
@@ -39,10 +35,11 @@ tasks:
     deps:
       - task: build
     cmds:
+      - echo "running {{.OUTPUT}}"
+      - echo ""
       - "{{.OUTPUT}}"
 
   clean:
-    silent: true
     desc: remove build directory
     cmds:
       - cmd: rm -r {{.BUILD_DIR}} &> /dev/null

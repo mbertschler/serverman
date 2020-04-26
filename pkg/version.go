@@ -1,15 +1,15 @@
-package version
+package pkg
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
 	"time"
 )
 
 var (
-	buildHash      string
-	buildDate      string
-	buildGoVersion string
+	buildHash string
+	buildDate string
 
 	buildTime time.Time
 )
@@ -19,16 +19,16 @@ func init() {
 	buildTime = time.Unix(int64(i), 0)
 }
 
-// String returns build information as a string.
-func String() string {
+// VersionString returns build information as a string.
+func VersionString() string {
 	if len(buildHash) > 10 {
 		return fmt.Sprintf(`
 	Commit:     %s
 	Date:       %s
-	Go version: %s`,
+	Go version: %s %s/%s`,
 			buildHash[:10],
 			buildTime,
-			buildGoVersion,
+			runtime.Version(), runtime.GOOS, runtime.GOARCH,
 		)
 	}
 

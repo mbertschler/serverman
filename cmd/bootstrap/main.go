@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/mbertschler/serverman/pkg/version"
+	"github.com/mbertschler/serverman/pkg"
 )
 
 func main() {
@@ -11,5 +11,5 @@ func main() {
 
 	log.Println("hello world")
 
-	log.Println(version.String())
+	log.Println(pkg.VersionString())
 }
