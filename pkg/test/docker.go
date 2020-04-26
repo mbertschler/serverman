@@ -8,6 +8,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/mbertschler/serverman"
 	"github.com/mbertschler/serverman/pkg/sh"
 )
 
@@ -32,7 +33,7 @@ func SkipIfDockerUnavailable(t *testing.T) {
 	}
 }
 
-func StartDebian(t *testing.T) (stop func()) {
+func StartDebian(t *testing.T) (e *serverman.Env, cleanup func()) {
 	SkipIfDockerUnavailable(t)
 	id, err := sh.RunString("docker", "run", "-d", "debian:10", "sleep", "1m")
 	if err != nil {
@@ -43,8 +44,7 @@ func StartDebian(t *testing.T) (stop func()) {
 	runningContainersLock.Lock()
 	runningContainers[id] = struct{}{}
 	runningContainersLock.Unlock()
-	stop = func() {
-		log.Println("stopping")
+	cleanup = func() {
 		_, err := sh.RunString("docker", "rm", "-f", id)
 		if err != nil {
 			log.Println(err)
@@ -53,7 +53,10 @@ func StartDebian(t *testing.T) (stop func()) {
 		delete(runningContainers, id)
 		runningContainersLock.Unlock()
 	}
-	return stop
+	env := &serverman.Env{
+		TestDockerID: id,
+	}
+	return env, cleanup
 }
 
 func StopAllContainersOnInterrupt() {
