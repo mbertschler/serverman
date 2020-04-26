@@ -39,7 +39,7 @@ linters:
     - godox
     - maligned
     - prealloc
-    - nestif
+    # - nestif # not yet supported in GitHub Action linter version
 
 issues:
   exclude-use-default: false
