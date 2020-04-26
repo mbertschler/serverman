@@ -1,3 +1,4 @@
+// Package apt installs Debian packages with apt-get.
 package apt
 
 import (
@@ -7,10 +8,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Package represents an apt package that should be installed.
 type Package struct {
 	Name string
 }
 
+// Check checks if the apt package is already installed using dpkg.
 func (p *Package) Check(e *serverman.Env) (ok bool, err error) {
 	out, err := e.RunString("dpkg", "-l", p.Name)
 	if err == nil {
@@ -22,6 +25,7 @@ func (p *Package) Check(e *serverman.Env) (ok bool, err error) {
 	return false, errors.Wrapf(err, "unexpected output %q", out)
 }
 
+// Apply installs the package with apt-get.
 func (p *Package) Apply(e *serverman.Env) (err error) {
 	out, err := e.RunString("apt-get", "update")
 	if err != nil {

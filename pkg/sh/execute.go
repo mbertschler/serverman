@@ -1,3 +1,4 @@
+// Package sh is a helper for running commands with os/exec
 package sh
 
 import (

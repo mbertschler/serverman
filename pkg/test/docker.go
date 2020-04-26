@@ -1,3 +1,4 @@
+// Package test consists of helper for testing serverman.
 package test
 
 import (
@@ -20,7 +21,7 @@ var (
 	runningContainers     = map[string]struct{}{}
 )
 
-func SkipIfDockerUnavailable(t *testing.T) {
+func skipIfDockerUnavailable(t *testing.T) {
 	if !dockerAvailableChecked {
 		_, err := sh.RunString("docker", "version")
 		if err == nil {
@@ -33,9 +34,12 @@ func SkipIfDockerUnavailable(t *testing.T) {
 	}
 }
 
+// StartDebian starts a Debian Docker container and returns an Env that
+// can run commands inside it. After use the cleanup function must be
+// called, ideally in a defer right after this call.
 func StartDebian(t *testing.T) (e *serverman.Env, cleanup func()) {
 	image := "debian:10"
-	SkipIfDockerUnavailable(t)
+	skipIfDockerUnavailable(t)
 	out, err := sh.RunString("docker", "images", "-q", image)
 	if err != nil {
 		t.Fatal("failed to check Debian Docker image:", err)
@@ -72,6 +76,8 @@ func StartDebian(t *testing.T) (e *serverman.Env, cleanup func()) {
 	return env, cleanup
 }
 
+// StopAllContainersOnInterrupt waits for a SIGINT, stops all containers and
+// calls os.Exit(1).
 func StopAllContainersOnInterrupt() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -83,6 +89,7 @@ func StopAllContainersOnInterrupt() {
 	}()
 }
 
+// StopAllContainers stops all Docker containers that were started by this package.
 func StopAllContainers() {
 	runningContainersLock.Lock()
 	defer runningContainersLock.Unlock()
