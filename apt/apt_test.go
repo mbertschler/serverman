@@ -6,6 +6,7 @@ import (
 
 	"github.com/mbertschler/serverman/pkg/test"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -19,8 +20,8 @@ func TestAptInstall(t *testing.T) {
 
 	pkg := Package{Name: "nano"}
 	ok, err := pkg.Check(env)
+	require.NoError(t, err)
 	assert.False(t, ok)
-	assert.NoError(t, err)
 
 	err = pkg.Apply(env)
 	assert.NoError(t, err)
@@ -32,10 +33,10 @@ func TestAptInstallInvalid(t *testing.T) {
 
 	pkg := Package{Name: "nanos"}
 	ok, err := pkg.Check(env)
-	assert.False(t, ok)
 	assert.NoError(t, err)
+	assert.False(t, ok)
 
 	err = pkg.Apply(env)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "Unable to locate package nanos")
 }

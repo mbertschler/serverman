@@ -33,8 +33,8 @@ a Git URL to a repository where your personal config is stored.
 - it regularly checks if new commits can be pulled
 - if there are new commits, it rebuilds the config
 
-For simplicity the tool is stateless and gets all required information from the system every time it runs.
-It also prefers using CLIs over APIs for ease of debugging and manual testing.
+The tool keeps a state of all applied installs so that it can remove software that is not part of a newer config.
+It prefers using CLIs over APIs for ease of debugging, manual testing and keeping the list of dependencies small.
 
 ## Planned Config Packages
 

@@ -14,31 +14,37 @@ import (
 )
 
 var (
-	dockerAvailableChecked bool
-	dockerAvailable        bool
+	dockerAvailableOnce sync.Once
+	dockerAvailable     bool
 
 	runningContainersLock sync.Mutex
 	runningContainers     = map[string]struct{}{}
 )
 
-func skipIfDockerUnavailable(t *testing.T) {
-	if !dockerAvailableChecked {
-		_, err := sh.RunString("docker", "version")
-		if err == nil {
-			dockerAvailable = true
-		}
-		dockerAvailableChecked = true
+func checkDockerAvailable() {
+	_, err := sh.RunString("docker", "version")
+	if err == nil {
+		dockerAvailable = true
 	}
+}
+
+func skipIfDockerUnavailable(t *testing.T) {
+	dockerAvailableOnce.Do(checkDockerAvailable)
 	if !dockerAvailable {
 		t.Skip("skipping because Docker is unavailable")
 	}
 }
 
-// StartDebian starts a Debian Docker container and returns an Env that
-// can run commands inside it. After use the cleanup function must be
-// called, ideally in a defer right after this call.
+// StartDebian calls StartDocker with a default Debian image.
 func StartDebian(t *testing.T) (e *serverman.Env, cleanup func()) {
 	image := "debian:10"
+	return StartDocker(t, image)
+}
+
+// StartDocker starts a Docker container with the specified Image and returns
+// an Env that can run commands inside it. After use the cleanup function must be
+// called, ideally in a defer right after this call.
+func StartDocker(t *testing.T, image string) (e *serverman.Env, cleanup func()) {
 	skipIfDockerUnavailable(t)
 	out, err := sh.RunString("docker", "images", "-q", image)
 	if err != nil {
@@ -52,7 +58,7 @@ func StartDebian(t *testing.T) (e *serverman.Env, cleanup func()) {
 			return
 		}
 	}
-	id, err := sh.RunString("docker", "run", "-d", image, "sleep", "1m")
+	id, err := sh.RunString("docker", "run", "--rm", "-d", image, "sleep", "1h")
 	if err != nil {
 		t.Fatal("failed to start Debian Docker container:", err)
 		return
