@@ -34,8 +34,21 @@ func SkipIfDockerUnavailable(t *testing.T) {
 }
 
 func StartDebian(t *testing.T) (e *serverman.Env, cleanup func()) {
+	image := "debian:10"
 	SkipIfDockerUnavailable(t)
-	id, err := sh.RunString("docker", "run", "-d", "debian:10", "sleep", "1m")
+	out, err := sh.RunString("docker", "images", "-q", image)
+	if err != nil {
+		t.Fatal("failed to check Debian Docker image:", err)
+		return
+	}
+	if out == "" {
+		out, err := sh.RunString("docker", "pull", image)
+		if err != nil {
+			t.Fatal("failed to pull Debian Docker image:", err, out)
+			return
+		}
+	}
+	id, err := sh.RunString("docker", "run", "-d", image, "sleep", "1m")
 	if err != nil {
 		t.Fatal("failed to start Debian Docker container:", err)
 		return
