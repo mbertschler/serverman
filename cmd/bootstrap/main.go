@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/mbertschler/serverman/pkg"
+	"github.com/mbertschler/serverman/pkg/golang"
 )
 
 func main() {
@@ -12,4 +13,11 @@ func main() {
 	log.Println("hello world")
 
 	log.Println(pkg.VersionString())
+
+	err := golang.Install()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	select {}
 }
