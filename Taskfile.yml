@@ -15,11 +15,13 @@ vars:
 tasks:
   test-full:
     cmds:
-      - go test ./...
+      - go clean -testcache
+      - go test -v ./...
 
   test:
     cmds:
-      - go test --short ./...
+      - go clean -testcache
+      - go test -v --short ./...
 
   build:
     cmds:
