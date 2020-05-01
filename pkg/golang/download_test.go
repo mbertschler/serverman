@@ -18,7 +18,7 @@ func TestDownload(t *testing.T) {
 
 	f, err := os.Stat(tmpDownloadFile)
 	require.NoError(t, err)
-	assert.Greater(t, f.Size(), int64(1000000))
+	assert.Greater(t, f.Size(), int64(1e6))
 
 	err = remove()
 	require.NoError(t, err)

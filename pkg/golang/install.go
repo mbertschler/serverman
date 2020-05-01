@@ -28,15 +28,16 @@ func Install() error {
 	if err != nil {
 		return err
 	}
-	// defer remove()
-	log.Println("done")
+	defer remove()
 
+	log.Println("uninstalling old go version")
 	// remove the old installation
-	// err = Uninstall()
-	// if err != nil {
-	// 	return err
-	// }
+	err = Uninstall()
+	if err != nil {
+		return err
+	}
 
+	log.Println("installing", version)
 	// unpack the archive
 	err = unpack()
 	if err != nil {
