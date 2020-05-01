@@ -14,16 +14,19 @@ vars:
 
 tasks:
   test-full:
+    desc: test all packages (including long tests)
     cmds:
       - go clean -testcache
       - go test -v ./...
 
   test:
+    desc: test all packages (skip long tests)
     cmds:
       - go clean -testcache
       - go test -v --short ./...
 
   build:
+    desc: build serverman
     cmds:
       - echo "building {{.OUTPUT}}"
       - go build -trimpath -ldflags "-s -w -X '{{.MODULE_NAME}}/pkg.buildHash={{.BUILD_HASH}}' -X '{{.MODULE_NAME}}/pkg.buildDate={{.BUILD_DATE}}'" -o {{.OUTPUT}} '{{.MODULE_NAME}}/cmd/bootstrap'
@@ -34,6 +37,7 @@ tasks:
       - "{{.OUTPUT}}"
 
   run:
+    desc: run serverman on the local machine
     deps:
       - task: build
     cmds:
@@ -42,6 +46,7 @@ tasks:
       - "{{.OUTPUT}}"
 
   run-docker:
+    desc: run serverman in a docker container
     deps:
       - task: build
       - task: docker
@@ -51,6 +56,7 @@ tasks:
       - docker run --rm -v $(pwd):/serverman serverman /serverman/{{.OUTPUT}}
 
   docker:
+    desc: build serverman into a docker image
     cmds:
       - echo "building docker container"
       - docker build -t serverman .
