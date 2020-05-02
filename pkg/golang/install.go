@@ -1,12 +1,10 @@
 package golang
 
 import (
-	"archive/tar"
-	"compress/gzip"
-	"io"
 	"log"
 	"os"
-	"path/filepath"
+
+	"github.com/mbertschler/serverman/archive"
 )
 
 const (
@@ -48,64 +46,5 @@ func Install() error {
 }
 
 func unpack() error {
-	// get the downloaded file
-	dlFile, err := os.Open(tmpDownloadFile)
-	if err != nil {
-		return err
-	}
-	defer dlFile.Close()
-
-	// un-gzip it
-	gz, err := gzip.NewReader(dlFile)
-	if err != nil {
-		return err
-	}
-
-	// read the tar
-	tr := tar.NewReader(gz)
-
-	for {
-		// switch to next object
-		header, err := tr.Next()
-		if err != nil {
-			if err == io.EOF {
-				// done
-				return nil
-			}
-			return err
-		}
-
-		log.Println(header.Name)
-
-		target := filepath.Join(goInstallPath, header.Name)
-
-		switch header.Typeflag {
-		// directory
-		case tar.TypeDir:
-			err = os.MkdirAll(target, 0755)
-			if err != nil {
-				return err
-			}
-
-		// file
-		case tar.TypeReg:
-			err = writeFile(target, tr, os.FileMode(header.Mode))
-			if err != nil {
-				return err
-			}
-		}
-	}
-}
-
-func writeFile(path string, r io.Reader, perm os.FileMode) error {
-	// open output file
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, perm)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	// write to file
-	_, err = io.Copy(f, r)
-	return err
+	return archive.UnpackFile(goInstallPath, tmpDownloadFile)
 }
