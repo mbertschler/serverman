@@ -1,0 +1,68 @@
+version: "2"
+silent: true
+expansions: 5
+
+vars:
+  MODULE_NAME: "github.com/mbertschler/serverman"
+  BUILD_HASH:
+    sh: git log --pretty=format:%H -n 1
+  BUILD_DATE:
+    sh: date "+%s"
+  BUILD_DIR: build
+  NAME: "serverman"
+  OUTPUT: "{{.BUILD_DIR}}/{{.NAME}}"
+
+tasks:
+  test-full:
+    desc: test all packages (including long tests)
+    cmds:
+      - go clean -testcache
+      - go test -v ./...
+
+  test:
+    desc: test all packages (skip long tests)
+    cmds:
+      - go clean -testcache
+      - go test -v --short ./...
+
+  build:
+    desc: build serverman
+    cmds:
+      - echo "building {{.OUTPUT}}"
+      - go build -trimpath -ldflags "-s -w -X '{{.MODULE_NAME}}/pkg.buildHash={{.BUILD_HASH}}' -X '{{.MODULE_NAME}}/pkg.buildDate={{.BUILD_DATE}}'" -o {{.OUTPUT}} '{{.MODULE_NAME}}/cmd/bootstrap'
+    sources:
+      - ./**/*.go
+      - Taskfile.yml
+    generates:
+      - "{{.OUTPUT}}"
+
+  run:
+    desc: run serverman on the local machine
+    deps:
+      - task: build
+    cmds:
+      - echo "running {{.OUTPUT}}"
+      - echo ""
+      - "{{.OUTPUT}}"
+
+  run-docker:
+    desc: run serverman in a docker container
+    deps:
+      - task: build
+      - task: docker
+    cmds:
+      - echo "running {{.OUTPUT}} in docker"
+      - echo ""
+      - docker run --rm -v $(pwd):/serverman serverman /serverman/{{.OUTPUT}}
+
+  docker:
+    desc: build serverman into a docker image
+    cmds:
+      - echo "building docker container"
+      - docker build -t serverman .
+
+  clean:
+    desc: remove build directory
+    cmds:
+      - cmd: rm -r {{.BUILD_DIR}} &> /dev/null
+      - ignore_error: true
